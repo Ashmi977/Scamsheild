@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScamShield</title>
+  <link rel="icon" href="icons/icon32.png">
+  <link rel="stylesheet" href="ui.css">
+  <link rel="stylesheet" href="popup.css">
+  <script type="module" src="popup.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/icon48.png" alt="" width="28" height="28">
+      <div>
+        <h1>ScamShield</h1>
+        <p class="tagline">Offline scam check · nothing leaves your browser</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="icon-btn" id="openTab" title="Open in a full tab" aria-label="Open in a full tab">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M11 3h6v6M17 3l-8 8M8 4H4v12h12v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <div role="tablist" class="tablist">
+      <button type="button" role="tab" id="tabAnalyze" aria-controls="viewAnalyze" aria-selected="true">Analyze</button>
+      <button type="button" role="tab" id="tabHistory" aria-controls="viewHistory" aria-selected="false">History</button>
+      <button type="button" role="tab" id="tabReport" aria-controls="viewReport" aria-selected="false">Report <span class="tab-dot" id="reportDot" hidden></span></button>
+    </div>
+    <button type="button" class="settings-btn" id="openSettings" title="Open settings">
+      <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <main>
+    <!-- ================= Analyze ================= -->
+    <section id="viewAnalyze" role="tabpanel" aria-labelledby="tabAnalyze">
+      <div class="layout">
+        <div class="col">
+          <form id="form" class="card input-card" novalidate>
+            <div class="drop-hint" aria-hidden="true">Drop the screenshot or QR code here</div>
+            <fieldset class="channels">
+              <legend>Channel</legend>
+              <div class="segmented" id="channels"></div>
+              <p class="hint" id="channelDescription"></p>
+            </fieldset>
+
+            <div class="details" data-source="SMS">
+              <label>Sender ID or number <input id="smsSender" autocomplete="off" placeholder="e.g. AX-HDFCBK-S or +91 98765 43210"></label>
+            </div>
+            <div class="details" data-source="WHATSAPP" hidden>
+              <label>Sender number <input id="waNumber" autocomplete="off" placeholder="e.g. +91 98765 43210 or +44 7700 900123"></label>
+              <label class="check"><input type="checkbox" id="waUnknown"> Sender is not in my contacts</label>
+              <label class="check"><input type="checkbox" id="waForwarded"> Marked “Forwarded many times”</label>
+            </div>
+            <div class="details" data-source="UPI" hidden>
+              <label>Request type <select id="upiType"></select></label>
+              <div class="row">
+                <label>Payee UPI ID <input id="upiVpa" autocomplete="off" placeholder="e.g. name@okbank"></label>
+                <label class="narrow">Amount (Rs) <input id="upiAmount" inputmode="decimal" autocomplete="off" placeholder="Optional"></label>
+              </div>
+            </div>
+            <div class="details" data-source="EMAIL" hidden>
+              <label>From <input id="emailFrom" autocomplete="off" placeholder="e.g. HDFC Bank &lt;alerts@hdfcbank.com&gt;"></label>
+              <label>Subject <input id="emailSubject" autocomplete="off"></label>
+            </div>
+
+            <div class="image-bar">
+              <button type="button" class="ghost small" id="chooseImage">
+                <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/><path d="m4 15 4.5-4.5 3 3 2-2L17 15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                Check a screenshot or QR code
+              </button>
+              <span class="hint">or paste an image with Ctrl+V</span>
+              <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" hidden>
+            </div>
+
+            <div class="image-card" id="imageCard" hidden>
+              <img id="imageThumb" alt="The image you added">
+              <div class="image-info">
+                <p class="image-title" id="imageTitle"></p>
+                <div class="progress" id="imageProgress" hidden><span></span></div>
+                <dl class="qr-details" id="qrDetails" hidden></dl>
+                <p class="callout" id="qrCallout" hidden></p>
+                <p class="hint" id="imageHint"></p>
+              </div>
+              <button type="button" class="icon-btn" id="removeImage" title="Remove image" aria-label="Remove image">
+                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+
+            <label class="message-label">
+              <span class="label-row"><span>Message</span>
+                <select id="samples" aria-label="Load a sample message"></select>
+              </span>
+              <textarea id="message" rows="6" placeholder="Paste the message you received…" spellcheck="false"></textarea>
+            </label>
+            <div class="meta"><span id="counter">0 / 10,000</span><span>Ctrl+Enter to analyze</span></div>
+
+            <div class="actions">
+              <button type="submit" class="primary grow" id="analyze">Analyze message</button>
+              <button type="button" class="ghost" id="clear">Clear</button>
+            </div>
+            <p class="status" id="status" role="status">Ready. Analysis happens entirely in your browser.</p>
+          </form>
+
+          <p class="tip" id="tip"><b>Tip:</b> select text on any website, right-click and choose <i>Check with ScamShield</i>. Turn on badges for WhatsApp Web and Gmail in <a href="#" id="tipSettings">Settings</a>.</p>
+        </div>
+
+        <div id="result" class="result col" hidden>
+          <div class="card summary">
+            <svg id="gauge" class="gauge" viewBox="0 0 200 116" role="img" aria-label="Risk score"></svg>
+            <div class="summary-text">
+              <p class="category" id="category"></p>
+              <p class="pattern" id="pattern"></p>
+              <div class="result-actions">
+                <button type="button" class="secondary small" id="openReport">Report this message</button>
+                <button type="button" class="ghost small" id="copySummary">Copy summary</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card notes" id="notesCard" hidden>
+            <ul id="notes"></ul>
+          </div>
+
+          <div class="card">
+            <h2>Warning signs <span class="count" id="indicatorCount"></span></h2>
+            <ul class="indicators" id="indicators"></ul>
+          </div>
+
+          <div class="card" id="highlightCard">
+            <h2>Your message</h2>
+            <p class="hint">Highlighted words triggered a warning sign.</p>
+            <div class="highlighted" id="highlighted"></div>
+          </div>
+
+          <div class="card">
+            <h2>What to do</h2>
+            <ol class="advice" id="advice"></ol>
+          </div>
+
+          <p class="disclaimer" id="disclaimer"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Report ================= -->
+    <section id="viewReport" role="tabpanel" aria-labelledby="tabReport" hidden>
+      <div class="report-layout">
+        <div class="col">
+          <div class="card report-context" id="reportContext"></div>
+
+          <div class="card urgent" id="urgentCard">
+            <h2>Lost money or shared your details?</h2>
+            <p>Call the national cybercrime helpline <b>1930</b> right away. Reporting within the first hour gives the best chance of stopping the money.</p>
+            <a class="call" href="tel:1930">Call 1930</a>
+          </div>
+
+          <div class="card">
+            <h2>Where to report</h2>
+            <ul class="destinations" id="destinations"></ul>
+          </div>
+
+          <div class="card">
+            <h2>Keep this evidence</h2>
+            <ul class="checklist">
+              <li>Screenshots of the message, the sender's number or ID, and the chat or email</li>
+              <li>Transaction or UTR ID, date, time and amount of any payment</li>
+              <li>Your bank or UPI statement showing the transaction</li>
+              <li>Links, UPI IDs, phone numbers or app names the scammer used</li>
+            </ul>
+            <p class="hint">Do not delete the message until you have reported it.</p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <h2>Incident details <span class="optional">optional</span></h2>
+            <p class="hint">Added to the report text below. Kept only while this window is open; never saved.</p>
+            <div class="row">
+              <label>Money lost (Rs) <input id="incAmount" inputmode="decimal" autocomplete="off" placeholder="e.g. 18500"></label>
+              <label>Date of payment <input id="incDate" type="date"></label>
+            </div>
+            <div class="row">
+              <label>Transaction / UTR ID <input id="incTxn" autocomplete="off" spellcheck="false"></label>
+              <label>Bank or UPI app <input id="incApp" autocomplete="off" placeholder="e.g. PhonePe, SBI"></label>
+            </div>
+            <label>What happened <textarea id="incNotes" rows="3" placeholder="e.g. They called pretending to be from the bank and asked me to approve a request."></textarea></label>
+          </div>
+
+          <div class="card report">
+            <h2>Report text</h2>
+            <label class="check" id="includeMessageRow"><input type="checkbox" id="includeMessage" checked> Include the full message text</label>
+            <textarea id="reportText" rows="12" readonly spellcheck="false" aria-label="Report text"></textarea>
+            <div class="actions">
+              <button type="button" class="primary grow" id="copyReport">Copy report</button>
+              <button type="button" class="ghost" id="downloadReport">Save as .txt</button>
+            </div>
+            <p class="hint">ScamShield does not send anything. Paste this into the complaint form yourself.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= History ================= -->
+    <section id="viewHistory" role="tabpanel" aria-labelledby="tabHistory" hidden>
+      <div class="card">
+        <div class="history-head">
+          <div>
+            <h2>Analysis history</h2>
+            <p class="hint" id="historyHint">Stored only in this browser. Message text is never saved.</p>
+          </div>
+          <p class="total" id="historyTotal">0</p>
+        </div>
+        <div class="bars" id="categoryBars" aria-label="Analyses by risk level"></div>
+        <div class="chips" id="sourceTotals"></div>
+      </div>
+
+      <div class="card">
+        <div class="filters">
+          <label>Channel <select id="filterSource"></select></label>
+          <label>Risk <select id="filterRisk"></select></label>
+        </div>
+        <ul class="history" id="historyList"></ul>
+        <p class="empty" id="historyEmpty" hidden>No analyses yet. Results appear here after you analyze a message.</p>
+        <div class="actions">
+          <button type="button" class="secondary" id="exportCsv">Export CSV</button>
+          <button type="button" class="danger push" id="clearHistory">Clear history</button>
+        </div>
+        <p class="status" id="historyStatus" role="status"></p>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

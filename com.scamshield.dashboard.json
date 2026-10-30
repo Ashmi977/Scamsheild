@@ -1,0 +1,9 @@
+{
+    "name":  "com.scamshield.dashboard",
+    "description":  "ScamShield desktop dashboard",
+    "path":  "D:\\College\\ScamSheild Ext\\native-host\\scamshield-host.bat",
+    "type":  "stdio",
+    "allowed_origins":  [
+                            "chrome-extension://bokllmmcjdifohieaphakkifcbmlpope/"
+                        ]
+}

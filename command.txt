@@ -1,0 +1,1 @@
+& 'C:\Program Files\Java\jdk-27.0.1.0.3\bin\javaw.exe' -jar .\target\scamshield-1.1.0.jar

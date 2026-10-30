@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScamShield settings</title>
+  <link rel="icon" href="icons/icon32.png">
+  <link rel="stylesheet" href="ui.css">
+  <link rel="stylesheet" href="options.css">
+  <script type="module" src="options.js"></script>
+</head>
+<body>
+  <header class="page-head">
+    <img src="icons/icon48.png" alt="" width="36" height="36">
+    <div>
+      <h1>ScamShield settings</h1>
+      <p class="hint">Everything here is stored only in this browser.</p>
+    </div>
+    <span class="saved" id="saved" role="status" aria-live="polite"></span>
+  </header>
+
+  <div class="page">
+    <nav class="toc" aria-label="Sections">
+      <a href="#inline">Inline warnings</a>
+      <a href="#dashboard">Desktop dashboard</a>
+      <a href="#trusted">Trusted senders</a>
+      <a href="#rules">Rules</a>
+      <a href="#appearance">Appearance</a>
+      <a href="#data">History &amp; data</a>
+      <a href="#about">About &amp; privacy</a>
+    </nav>
+
+    <main>
+      <section class="card welcome" id="welcome" hidden>
+        <h2>ScamShield is installed</h2>
+        <ol>
+          <li><b>Pin it</b>: open the puzzle-piece menu in the toolbar and pin ScamShield. <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> also opens it.</li>
+          <li><b>Check any message</b>: paste it into the popup, select text on a page and choose <i>Check with ScamShield</i> from the right-click menu, or paste a screenshot or QR code.</li>
+          <li><b>Optional</b>: turn on inline warnings below to see badges directly on WhatsApp Web and Gmail.</li>
+        </ol>
+        <p class="hint">All checks run on this device. ScamShield never sends your messages anywhere.</p>
+      </section>
+
+      <section class="card" id="inline">
+        <h2>Inline warnings</h2>
+        <p class="hint lead">Shows a badge next to risky messages while you read them. Turning a site on asks Chrome for permission to read that site only. Messages are checked inside the extension and never leave your browser.</p>
+        <div class="toggle-row">
+          <div><b>WhatsApp Web</b><p class="hint">Incoming chat messages. Senders shown as a phone number are treated as not in your contacts.</p></div>
+          <input type="checkbox" role="switch" class="switch" id="inlineWHATSAPP" aria-label="Inline warnings on WhatsApp Web">
+        </div>
+        <div class="toggle-row">
+          <div><b>Gmail</b><p class="hint">Opened emails, including the real destinations of links hidden behind link text.</p></div>
+          <input type="checkbox" role="switch" class="switch" id="inlineEMAIL" aria-label="Inline warnings on Gmail">
+        </div>
+        <label class="inline-level">Show badges for
+          <select id="inlineMinLevel">
+            <option value="MEDIUM">Medium risk and above</option>
+            <option value="HIGH">High risk and above</option>
+            <option value="CRITICAL">Critical risk only</option>
+          </select>
+        </label>
+        <p class="status" id="inlineStatus" role="status"></p>
+      </section>
+
+      <section class="card" id="dashboard">
+        <h2>Desktop dashboard</h2>
+        <p class="hint lead">Shows your browser checks in the ScamShield desktop app, next to the checks you make there. Results are passed to the app on this computer through Chrome's native messaging: only the channel, score, risk level, pattern and warning-sign names, never the message text.</p>
+        <div class="toggle-row">
+          <div><b>Send results to the desktop dashboard</b><p class="hint">Includes checks from the popup, the right-click menu, screenshots and inline badges.</p></div>
+          <input type="checkbox" role="switch" class="switch" id="dashboardOn" aria-label="Send results to the desktop dashboard">
+        </div>
+        <div class="connection" id="connection" data-state="off">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <b id="connectionTitle">Off</b>
+            <p class="hint" id="connectionDetail">Switch it on to connect.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="secondary" id="testDashboard">Test connection</button>
+          <button type="button" class="ghost" id="syncDashboard">Send existing history</button>
+        </div>
+        <details class="setup">
+          <summary>First-time setup</summary>
+          <ol>
+            <li>Build the desktop app (<code>mvn package</code>) so <code>target\scamshield-1.1.0.jar</code> exists.</li>
+            <li>In the project folder, run <code>powershell -ExecutionPolicy Bypass -File scripts\install-native-host.ps1</code> once. It registers the connector for Chrome and Edge for your Windows account only.</li>
+            <li>Switch on <i>Send results to the desktop dashboard</i> above and press <b>Test connection</b>.</li>
+            <li>Open the desktop app (<code>ScamShield.bat</code>). Its Dashboard updates by itself as you check messages here.</li>
+          </ol>
+        </details>
+      </section>
+
+      <section class="card" id="trusted">
+        <h2>Trusted senders and websites</h2>
+        <p class="hint lead">One entry per line. A trusted entry skips only the checks about <i>who</i> sent the message or <i>where</i> a link points. The message text is always checked, because trusted accounts can be hacked or imitated.</p>
+        <div class="grid2">
+          <label>SMS sender IDs or numbers
+            <textarea id="trusted-smsSenders" rows="4" placeholder="AX-HDFCBK-S&#10;JD-AMAZON-S" spellcheck="false"></textarea>
+          </label>
+          <label>WhatsApp numbers
+            <textarea id="trusted-whatsappNumbers" rows="4" placeholder="+91 98450 67890" spellcheck="false"></textarea>
+          </label>
+          <label>UPI IDs
+            <textarea id="trusted-upiIds" rows="4" placeholder="ananya.sharma@okhdfcbank" spellcheck="false"></textarea>
+          </label>
+          <label>Email domains
+            <textarea id="trusted-emailDomains" rows="4" placeholder="college.example.edu" spellcheck="false"></textarea>
+          </label>
+          <label class="span2">Website domains (links)
+            <textarea id="trusted-linkDomains" rows="3" placeholder="college.example.edu&#10;myshop.example.in" spellcheck="false"></textarea>
+            <span class="hint">Subdomains are included: <code>example.edu</code> also trusts <code>portal.example.edu</code>.</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" id="rules">
+        <div class="section-head">
+          <div>
+            <h2>Rules</h2>
+            <p class="hint">Turn rules off or change how many points they add (0–100). A total of 25 or more is Medium risk, 50 High and 75 Critical.</p>
+          </div>
+          <button type="button" class="ghost small" id="resetRules">Reset all rules</button>
+        </div>
+        <input type="search" id="ruleFilter" placeholder="Filter rules, e.g. UPI, link, email…" aria-label="Filter rules">
+        <div id="ruleGroups"></div>
+      </section>
+
+      <section class="card" id="appearance">
+        <h2>Appearance</h2>
+        <div class="radios" role="radiogroup" aria-label="Theme">
+          <label class="check"><input type="radio" name="theme" value="auto"> Match the system</label>
+          <label class="check"><input type="radio" name="theme" value="light"> Light</label>
+          <label class="check"><input type="radio" name="theme" value="dark"> Dark</label>
+        </div>
+      </section>
+
+      <section class="card" id="data">
+        <h2>History &amp; data</h2>
+        <div class="toggle-row">
+          <div><b>Save analyses to history</b><p class="hint">Keeps the channel, score, risk level, pattern and warning-sign names. Never the message text. Inline badges are never saved.</p></div>
+          <input type="checkbox" role="switch" class="switch" id="saveHistory" aria-label="Save analyses to history">
+        </div>
+        <div class="actions">
+          <button type="button" class="danger" id="clearHistory">Clear history</button>
+          <button type="button" class="danger" id="resetAll">Reset all settings</button>
+        </div>
+        <p class="status" id="dataStatus" role="status"></p>
+      </section>
+
+      <section class="card" id="about">
+        <h2>About &amp; privacy</h2>
+        <p>ScamShield <span id="version"></span> checks messages with a fixed set of explainable rules. It does not use AI, does not look links up online and cannot verify who really sent a message. Its result is a warning, not proof.</p>
+        <ul class="facts">
+          <li>No network access: the extension's security policy blocks all outgoing connections.</li>
+          <li>Screenshots and QR codes are read on this device by bundled copies of jsQR and Tesseract.js (Apache-2.0).</li>
+          <li>Inline warnings can read only the sites you switch on here, and you can turn them off at any time.</li>
+          <li>Lost money or shared details? Call <b>1930</b> or report at <a href="https://cybercrime.gov.in" target="_blank" rel="noopener">cybercrime.gov.in</a>.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
